@@ -6,6 +6,13 @@ grid_spacing = HOG2x2param.grid_spacing;
 patch_size = HOG2x2param.patch_size;
 cell_win = floor(patch_size/3);
 
+% ------- revised by Jiyuan ---------
+% adaptive to gray img
+if(size(I, 3)==1)
+  I = cat(3,I,I,I);
+end
+% -----------------------------------
+
 I = double(I);
 d = pixelwise_hog31(I,cell_win);
 xmax = size(d,1); ymax = size(d,2);
