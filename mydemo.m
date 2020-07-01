@@ -1,7 +1,8 @@
 
 addpath(genpath(pwd));
 
-dpath = 'D:\Work\datasets\mData\OrigData\';
+% dpath = 'D:\Work\datasets\mData\OrigData\';
+dpath = '/home/ftp2/jiyuan/datasets/';
 dnames = { 'MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100'};
 len_dn = length(dnames);
 
@@ -10,7 +11,8 @@ numfeat = length(view_meaning);
 
 for dn = 1:1
     dname = dnames{dn};
-    load([dpath, dname, '\', dname, '_img.mat'], 'X', 'Y', 'class_meaning');
+%     load([dpath, dname, '\', dname, '_img.mat'], 'X', 'Y', 'class_meaning');
+    load([dpath, 'mData/Imatrix/', dname, '_img.mat'], 'X', 'Y', 'class_meaning');
     
     numsmp = size(X, 1);
     for i = 1:numsmp
@@ -19,10 +21,10 @@ for dn = 1:1
         color(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('gist', img);
         gist(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
-%         tmp = extract_feature('hog2x2', img);
-%         hog2x2(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
-%         tmp = extract_feature('hog3x3', img);
-%         hog3x3(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
+        tmp = extract_feature('hog2x2', img);
+        hog2x2(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
+        tmp = extract_feature('hog3x3', img);
+        hog3x3(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('lbp', img);
         lbp(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('sift', img);
@@ -32,11 +34,12 @@ for dn = 1:1
         ssim(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
     end
     
-%     X = {color, gist, hog2x2, hog3x3, lbp, sift, ssim}';
-    X = {color, gist, lbp, sift, ssim}';
+    X = {color, gist, hog2x2, hog3x3, lbp, sift, ssim}';
+%     X = {color, gist, lbp, sift, ssim}';
     class_meaning = class_meaning';
     data_name = dname;
 
-    save([dpath, dname, '\', dname, '_img.mat'], 'data_name', 'X', 'Y', 'class_meaning', 'view_meaning', '-v7.3')
+%     save([dpath, dname, '\', dname, '_img.mat'], 'data_name', 'X', 'Y', 'class_meaning', 'view_meaning', '-v7.3')
+    save([dpath, 'mData/Fmatrix/', dname, '_img.mat'], 'data_name', 'X', 'Y', 'class_meaning', 'view_meaning', '-v7.3')
     
 end
