@@ -5,7 +5,7 @@ dpath = 'D:\Work\datasets\mData\OrigData\';
 dnames = { 'MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100'};
 len_dn = length(dnames);
 
-view_meaning = {'color', 'gist', 'hog2x2', 'hog3x3', 'lbp', 'sift', 'ssim'};
+view_meaning = {'color', 'gist', 'hog2x2', 'hog3x3', 'lbp', 'sift', 'ssim'}';
 numfeat = length(view_meaning);
 
 for dn = 1:1
@@ -16,19 +16,20 @@ for dn = 1:1
     for i = 1:numsmp
         img = squeeze(X(i,:,:));
         tmp = extract_feature('color', img);
-        color(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+        color(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('gist', img);
-        gist(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+        gist(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
 %         tmp = extract_feature('hog2x2', img);
-%         hog2x2(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+%         hog2x2(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
 %         tmp = extract_feature('hog3x3', img);
-%         hog3x3(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+%         hog3x3(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('lbp', img);
-        lbp(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+        lbp(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('sift', img);
-        sift(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+        tmp = extract_sift(img, c);
+        sift(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
         tmp = extract_feature('ssim', img);
-        ssim(:,i) = reshape(tmp', size(tmp,1)*size(tmp,2), 1);
+        ssim(:,i) = reshape(tmp, size(tmp,1)*size(tmp,2), 1);
     end
     
 %     X = {color, gist, hog2x2, hog3x3, lbp, sift, ssim}';
