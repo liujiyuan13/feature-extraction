@@ -15,22 +15,19 @@ for dn = 1:1
     
     fprintf('# handling with %s', dname);
     
-    save([dpath, 'mData/Fmatrix/', dname, '_img.mat'], 'data_name', 'X', 'Y', 'infos', 'Fshape', 'class_meaning', 'view_meaning', '-v7.3')
+    load([dpath, 'mData/Fmatrix/', dname, '_fea.mat'], 'data_name', 'X', 'Y', 'infos', 'Fshape', 'class_meaning', 'view_meaning');
     
 
     %% create clustering datasets with bag-of-words pipeline
-    data_name;
-    X;
     numclass = length(unique(Y));
-    class_meaning;
-    view_meaning;
     numview = length(view_meaning);
-
     Xtmp = cell(numview, 1);
     for v=1:numview
-        if ~strcmp(view_meaning{v},'gist') && ~strcmp(view_meaning{v}, 'lbp')
+        feature = view_meaning{v};
+        fprintf('\n# feature: %s', feature);
+        if ~strcmp(feature,'gist') && ~strcmp(feature, 'lbp')
             % build dictionary
-            feature = view_meaning{v};
+            fprintf('\n- build dictionary.');
             c.feature_config.(feature) = feval(['config_',feature], c);
             p = c.feature_config.(feature);
             Xorg = reshape(X{v}, Fshape{v}(2), Fshape{v}(1), size(X{v},2));
@@ -40,20 +37,24 @@ for dn = 1:1
             nvec = size(discriptors,1);
             if nvec>p.num_desc
                 idx = randperm(nvec);
-                tmpDisc = discriptors(idx(1:p.num_desc,:), :);
+                tmpDisc = discriptors(idx(1:p.num_desc), :);
             else
                 tmpDisc = discriptors;
             end
-            dictionary = kmeansFast(tmpDisc, p.dictionary_size);
+            dictionary = kmeansFast(tmpDisc, p.dictionary_size*10);
             p.dictionary = dictionary;
-            save([], 'dictionary');
+            save([dpath, 'mData/Fmatrix/', dname, '_dictionary.mat'], 'data_name', 'dictionary', '-v7.3');
 
             % extract llc feat
+            fprintf('\n- extract llc feat.');
             llcfeat = cell(size(Xorg,1),1);
-            for j=1:size(Xorg,1)
-                llcfeat{j} = sparse(LLC_coding_appr(dictionary, squeeze(Xorg(j,:,:)), p.llcknn));
+            llcknn = p.llcknn;
+            parfor j=1:size(Xorg,1)
+                llcfeat{j} = sparse(LLC_coding_appr(dictionary, squeeze(Xorg(j,:,:)), llcknn));
             end
-            poolfeat = max_pooling(llcfeat, infos, p.pyramid_levels);
+            % max pooling
+            fprintf('\n- max pooling.');
+            poolfeat = max_pooling(llcfeat, infos{v}, p.pyramid_levels);
             poolfeat = cast(poolfeat, c.precision);
 
             Xtmp{v} = double(poolfeat');
@@ -62,7 +63,8 @@ for dn = 1:1
         end
     end
     Y = int32(Y);
+    X = Xtmp;
 
-    save(['', ], 'data_name', 'X', 'Y', 'class_meaning', 'view_meaning', '-v7.3');
+    save([dpath, 'mData/Fmatrix/', dname, '_llc_fea.mat'], 'data_name', 'X', 'Y', 'class_meaning', 'view_meaning', '-v7.3');
     
 end
