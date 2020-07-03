@@ -10,17 +10,19 @@ len_dn = length(dnames);
 view_meaning = {'color', 'gist', 'hog2x2', 'hog3x3', 'lbp', 'sift', 'ssim'}';
 numfeat = length(view_meaning);
 
-for dn = 1:1
+for dn = 2:4
     dname = dnames{dn};
     
     fprintf('# handling with %s', dname);
     
     load([dpath, 'mData/Fmatrix/', dname, '_fea.mat'], 'data_name', 'X', 'Y', 'infos', 'Fshape', 'class_meaning', 'view_meaning');
     
-
+    % no need ssim for it's too long
+    view_meaning = view_meaning(1:6);
+    
     %% create clustering datasets with bag-of-words pipeline
-    numclass = length(unique(Y));
     numview = length(view_meaning);
+    numsmp = size(X{1},2);
     Xtmp = cell(numview, 1);
     for v=1:numview
         feature = view_meaning{v};
@@ -32,8 +34,12 @@ for dn = 1:1
             p = c.feature_config.(feature);
             Xorg = reshape(X{v}, Fshape{v}(2), Fshape{v}(1), size(X{v},2));
             Xorg = permute(Xorg, [3,2,1]); % N x N_d x d
+            
+            inddict = randperm(numsmp);
+            inddict = inddict(1:floor(numsmp/10));
+            Xdict = Xorg(inddict, :, :);
 
-            discriptors = reshape(Xorg, size(Xorg,1)*size(Xorg,2), size(Xorg,3)); % (N x N_d) x d
+            discriptors = reshape(Xdict, size(Xdict,1)*size(Xdict,2), size(Xdict,3)); % (N x N_d) x d
             nvec = size(discriptors,1);
             if nvec>p.num_desc
                 idx = randperm(nvec);
@@ -41,9 +47,9 @@ for dn = 1:1
             else
                 tmpDisc = discriptors;
             end
-            dictionary = kmeansFast(tmpDisc, p.dictionary_size*10);
+            dictionary = kmeansFast(tmpDisc, p.dictionary_size);
             p.dictionary = dictionary;
-            save([dpath, 'mData/Fmatrix/', dname, '_dictionary.mat'], 'data_name', 'dictionary', '-v7.3');
+            save([dpath, 'mData/Fmatrix/', dname, '_', feature, '_dictionary.mat'], 'data_name', 'inddict', 'dictionary', '-v7.3');
 
             % extract llc feat
             fprintf('\n- extract llc feat.');
@@ -54,7 +60,7 @@ for dn = 1:1
             end
             % max pooling
             fprintf('\n- max pooling.');
-            poolfeat = max_pooling(llcfeat, infos{v}, p.pyramid_levels);
+            poolfeat = max_pooling(llcfeat, infos{v}', c.pool_region, p.pyramid_levels);
             poolfeat = cast(poolfeat, c.precision);
 
             Xtmp{v} = double(poolfeat');

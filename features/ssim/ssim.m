@@ -57,4 +57,11 @@ grid_x = (minIdx(1):grid_spacing:maxIdx(1));
 grid_y = (minIdx(2):grid_spacing:maxIdx(2));
 
 featMat = featMat(1:grid_spacing:end,1:grid_spacing:end,:);
-[info.y info.x] = meshgrid(1:grid_spacing:size(featMat, 1), 1:grid_spacing:size(featMat, 2));
+% ------------- revised by Jiyuan --------------
+% [info.y info.x] = meshgrid(1:grid_spacing:size(featMat, 1), 1:grid_spacing:size(featMat, 2));
+[y, x] = meshgrid(1:grid_spacing:size(featMat, 1), 1:grid_spacing:size(featMat, 2));
+info.y = y(:);
+info.x = x(:);
+% ----------------------------------------------
+
+

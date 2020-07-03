@@ -31,14 +31,22 @@ for dn = 1:1
         rind = ind(randperm(length(ind)));
         numtra = floor(length(rind)*0.8);
         rindtra = rind(1:numtra);
-        rindtes = rind(numtra+1,end);
-        indad = [rindtes, find(Y~=i)];
+        rindtes = rind(numtra+1:end);
+        indad = [rindtes; find(Y~=i)];
 
         Xtra = cell(numview, 1);
         Xtes = cell(numview, 1);
         for v=1:numview
             feature = view_meaning{v};
             fprintf('\n# feature: %s', feature);
+            if strcmp(view_meaning{v}, 'ssim')
+                tmpinfo = infos{v};
+                parfor s=1:length(Y)
+                    tmpinfo{s}.x = tmpinfo{s}.x(:);
+                    tmpinfo{s}.y = tmpinfo{s}.y(:);
+                end
+                infos{v} = tmpinfo;
+            end
             if ~strcmp(view_meaning{v},'gist') && ~strcmp(view_meaning{v}, 'lbp')
                 % build dictionary
                 fprintf('\n- build dictionary.');
@@ -70,14 +78,14 @@ for dn = 1:1
                 % max pooling
                 fprintf('\n- max pooling.');
                 % feat of norm class
-                infos_tra = infos{v}(rindtra);
+                infos_tra = infos{v}(rindtra)';
                 llcfeat_tra = llcfeat(rindtra);
-                poolfeat_tra = max_pooling(llcfeat_tra, infos_tra, p.pyramid_levels);
+                poolfeat_tra = max_pooling(llcfeat_tra, infos_tra, c.pool_region, p.pyramid_levels);
                 poolfeat_tra = cast(poolfeat_tra, c.precision);
                 % feat of ad class
-                infos_ad = infos{v}(indad);
+                infos_ad = infos{v}(indad)';
                 llcfeat_ad = llcfeat(indad);
-                poolfeat_ad = max_pooling(llcfeat_ad, infos_ad, p.pyramid_levels);
+                poolfeat_ad = max_pooling(llcfeat_ad, infos_ad, c.pool_region, p.pyramid_levels);
                 poolfeat_ad = cast(poolfeat_ad, c.precision);
 
                 Xtra{v} = double(poolfeat_tra');
